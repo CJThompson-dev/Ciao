@@ -106,6 +106,11 @@ resource "aws_lb" "hosp" {
     enabled = true
     prefix  = "hosp-lb-connection-logs"
   }
+  health_check_logs {
+    bucket  = aws_s3_bucket.ciao-lb-logs.bucket
+    enabled = true
+    prefix  = "hosp-lb-health-check-logs"
+  }
 }
 
 
