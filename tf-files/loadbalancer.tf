@@ -122,6 +122,11 @@ resource "aws_s3_bucket" "ciao-lb-logs" {
   }
 }
 
+resource "aws_athena_database" "ciao_athena_table" {
+  name   = "ciao_athena_table"
+  bucket = aws_s3_bucket.ciao-lb-logs.id
+}
+
 resource "aws_s3_bucket_policy" "alb_logs_policy" {
   bucket = aws_s3_bucket.ciao-lb-logs.id
   policy = jsonencode({
