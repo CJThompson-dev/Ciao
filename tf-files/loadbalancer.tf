@@ -127,6 +127,16 @@ resource "aws_athena_database" "ciao_athena_table" {
   bucket = aws_s3_bucket.ciao-lb-logs.id
 }
 
+resource "aws_athena_workgroup" "ciao" {
+  name = "ciao-workgroup"
+
+  configuration {
+    result_configuration {
+      output_location = "s3://${aws_s3_bucket.ciao-lb-logs.bucket}/athena-results/"
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "alb_logs_policy" {
   bucket = aws_s3_bucket.ciao-lb-logs.id
   policy = jsonencode({
