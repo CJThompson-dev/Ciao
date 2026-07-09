@@ -1,6 +1,6 @@
 resource "aws_launch_template" "hosp_proxy" {
   name_prefix   = "hosp-proxy-"
-  image_id      = "ami-0b45ae66668865cd6"  # basic ubuntu
+  image_id      = "ami-0b45ae66668865cd6" # basic ubuntu
   instance_type = "t2.micro"
 
   vpc_security_group_ids = [aws_security_group.hosp_proxy.id]
