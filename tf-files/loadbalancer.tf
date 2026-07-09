@@ -20,7 +20,7 @@ resource "aws_lb_target_group" "hosp" {
     healthy_threshold   = 2
     interval            = 30
     matcher             = "200"
-    path                = "/"
+    path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 5
@@ -48,7 +48,7 @@ resource "aws_lb_target_group" "hosp" {
 resource "aws_lb_listener" "hosp" {
   alpn_policy                          = null
   certificate_arn                      = null
-  load_balancer_arn                    = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:loadbalancer/app/lb-Ciao/d7fd2dde506cb7dd"
+  load_balancer_arn                    = aws_lb.hosp.arn
   port                                 = 80
   protocol                             = "HTTP"
   routing_http_response_server_enabled = true
@@ -56,11 +56,11 @@ resource "aws_lb_listener" "hosp" {
   tags_all                             = {}
   default_action {
     order            = 1
-    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:targetgroup/lb-tg-Ciao/e37a9b3b5fd09c50"
+    target_group_arn = aws_lb_target_group.hosp.arn
     type             = "forward"
     forward {
       target_group {
-        arn    = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:targetgroup/lb-tg-Ciao/e37a9b3b5fd09c50"
+        arn    = aws_lb_target_group.hosp.arn
         weight = 1
       }
     }
@@ -155,34 +155,3 @@ resource "aws_s3_bucket_policy" "alb_logs_policy" {
   })
 }
 
-resource "aws_security_group" "hosp_alb" {
-  name        = "Load Balancer Security Group Ciao"
-  region      = "eu-west-2"
-  description = "Allows ingress via TCP on port 80 from all sources."
-  vpc_id      = "vpc-080dbb0b7dc86503a"
-  egress = [{
-    cidr_blocks      = ["0.0.0.0/0"]
-    description      = ""
-    from_port        = 0
-    ipv6_cidr_blocks = ["::/0"]
-    prefix_list_ids  = []
-    protocol         = "-1"
-    security_groups  = []
-    self             = false
-    to_port          = 0
-  }]
-  ingress = [{
-    cidr_blocks      = ["0.0.0.0/0"]
-    description      = ""
-    from_port        = 80
-    ipv6_cidr_blocks = ["::/0"]
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = []
-    self             = false
-    to_port          = 80
-  }]
-  tags = {
-    Owner = "Students"
-  }
-}
