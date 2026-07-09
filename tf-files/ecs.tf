@@ -1,45 +1,47 @@
 resource "aws_ecs_cluster" "ciao_ecs_cluster" {
   name = "ciao_ecs_cluster"
+  tags = {
+    Owner = "Ciao"
+  }
 }
 
-resource "aws_ecs_task_definition" "service" {
-  family = "service"
+resource "aws_ecs_task_definition" "proxy" {
+  family = "ciao-proxy"
+
+  requires_compatibilities = [
+    "FARGATE"
+  ]
+
+  network_mode = "awsvpc"
+
+  cpu    = "256"
+  memory = "512"
+
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+
   container_definitions = jsonencode([
     {
-      name      = "first"
-      image     = "service-first"
-      cpu       = 10
-      memory    = 512
+      name  = "proxy"
+      image = "${aws_ecr_repository.proxy.repository_url}:latest"
+
       essential = true
+
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
+          protocol      = "tcp"
         }
       ]
-    },
-    {
-      name      = "second"
-      image     = "service-second"
-      cpu       = 10
-      memory    = 256
-      essential = true
-      portMappings = [
-        {
-          containerPort = 443
-          hostPort      = 443
+
+      logConfiguration = {
+        logDriver = "awslogs"
+
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.proxy.name
+          awslogs-region        = "eu-west-2"
+          awslogs-stream-prefix = "proxy"
         }
-      ]
+      }
     }
   ])
-
-  volume {
-    name      = "service-storage"
-    host_path = "/ecs/service-storage"
-  }
-
-  placement_constraints {
-    type       = "memberOf"
-    expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
-  }
 }
