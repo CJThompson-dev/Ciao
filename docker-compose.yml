@@ -1,0 +1,9 @@
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ciao-proxy
+    ports:
+      - "8081:80"
+    restart: unless-stopped
