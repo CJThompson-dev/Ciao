@@ -18,7 +18,7 @@ resource "aws_lb_target_group" "hosp" {
   health_check {
     enabled             = true
     healthy_threshold   = 3
-    interval            = 10
+    interval            = 5
     matcher             = "200"
     path                = "/health"
     port                = "traffic-port"
