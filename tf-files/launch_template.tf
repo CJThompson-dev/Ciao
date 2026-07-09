@@ -5,7 +5,9 @@ resource "aws_launch_template" "hosp_proxy" {
 
   vpc_security_group_ids = [aws_security_group.hosp_proxy.id]
 
-  user_data = filebase64("${path.module}/user-data.sh") # fix this
+  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
+  proxy_config = file("${path.module}/proxy/ciao_proxy.conf")
+}))
 
   tag_specifications {
     resource_type = "instance"
