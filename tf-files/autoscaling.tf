@@ -4,6 +4,7 @@ resource "aws_autoscaling_group" "hosp_proxy" {
   max_size            = 4
   desired_capacity    = 2
   vpc_zone_identifier = ["subnet-09ffb20c4da788637", "subnet-0e606c290592d4005"]
+  health_check_type = "ELB"
 
   target_group_arns = [aws_lb_target_group.hosp.arn]
 
@@ -15,6 +16,6 @@ resource "aws_autoscaling_group" "hosp_proxy" {
   tag {
     key                 = "Name"
     value               = "hosp-proxy-ciao"
-    propagate_at_launch = true
+    propagate_at_launch = true #this allows the instances to be tagged by asg
   }
 }

@@ -17,14 +17,14 @@ resource "aws_lb_target_group" "hosp" {
   vpc_id                             = "vpc-080dbb0b7dc86503a"
   health_check {
     enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
+    healthy_threshold   = 3
+    interval            = 10
     matcher             = "200"
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
     timeout             = 5
-    unhealthy_threshold = 2
+    unhealthy_threshold = 3
   }
   stickiness {
     cookie_duration = 86400
