@@ -22,7 +22,7 @@ resource "aws_ecs_task_definition" "proxy" {
   container_definitions = jsonencode([
     {
       name  = "proxy"
-      image = "${aws_ecr_repository.ciao-proxy.repository_url}:latest"
+      image = "${aws_ecr_repository.ciao-proxy.repository_url}:latest"  
 
       essential = true
 
@@ -51,10 +51,10 @@ resource "aws_ecs_service" "proxy" {
   cluster         = aws_ecs_cluster.ciao_ecs_cluster.id
   task_definition = aws_ecs_task_definition.proxy.arn
 
-  launch_type = "FARGATE"
-  desired_count = 2
+  launch_type                        = "FARGATE"
+  desired_count                      = 2
   deployment_minimum_healthy_percent = 50
-  deployment_maximum_percent = 200
+  deployment_maximum_percent         = 200
 
 
   network_configuration {

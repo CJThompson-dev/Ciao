@@ -9,7 +9,6 @@ resource "aws_lb_target_group" "hosp" {
   port                               = 80
   protocol                           = "HTTP"
   protocol_version                   = "HTTP1"
-  proxy_protocol_v2                  = null
   slow_start                         = 0
   tags                               = {}
   tags_all                           = {}
@@ -55,7 +54,6 @@ resource "aws_lb_target_group" "proxy" {
   port                               = 80
   protocol                           = "HTTP"
   protocol_version                   = "HTTP1"
-  proxy_protocol_v2                  = null
   slow_start                         = 0
   tags                               = {}
   tags_all                           = {}
@@ -97,20 +95,23 @@ resource "aws_lb_listener" "hosp" {
   port                                 = 80
   protocol                             = "HTTP"
   routing_http_response_server_enabled = true
-  tags                                 = {}
-  tags_all                             = {}
+
   default_action {
-    order            = 1
-    target_group_arn = aws_lb_target_group.hosp.arn
-    type             = "forward"
+    order = 1
+    type  = "forward"
     forward {
       target_group {
         arn    = aws_lb_target_group.hosp.arn
-        weight = 1
+        weight = 0
+      }
+      target_group {
+        arn    = aws_lb_target_group.proxy.arn
+        weight = 100
       }
     }
   }
 }
+
 
 # __generated__ by Terraform
 resource "aws_lb" "hosp" {
