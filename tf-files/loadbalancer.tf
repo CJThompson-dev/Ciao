@@ -23,7 +23,7 @@ resource "aws_lb_target_group" "hosp" {
     path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 5
+    timeout             = 3
     unhealthy_threshold = 3
   }
   stickiness {
@@ -44,6 +44,51 @@ resource "aws_lb_target_group" "hosp" {
   }
 }
 
+resource "aws_lb_target_group" "proxy" {
+  deregistration_delay               = "300"
+  ip_address_type                    = "ipv4"
+  lambda_multi_value_headers_enabled = null
+  load_balancing_algorithm_type      = "round_robin"
+  load_balancing_anomaly_mitigation  = "off"
+  load_balancing_cross_zone_enabled  = "use_load_balancer_configuration"
+  name                               = "lb-tg-Ciao-proxy"
+  port                               = 80
+  protocol                           = "HTTP"
+  protocol_version                   = "HTTP1"
+  proxy_protocol_v2                  = null
+  slow_start                         = 0
+  tags                               = {}
+  tags_all                           = {}
+  target_type                        = "ip"
+  vpc_id                             = "vpc-080dbb0b7dc86503a"
+  health_check {
+    enabled             = true
+    healthy_threshold   = 3
+    interval            = 5
+    matcher             = "200"
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 3
+    unhealthy_threshold = 3
+  }
+  stickiness {
+    cookie_duration = 86400
+    cookie_name     = null
+    enabled         = false
+    type            = "lb_cookie"
+  }
+  target_group_health {
+    dns_failover {
+      minimum_healthy_targets_count      = 1
+      minimum_healthy_targets_percentage = "off"
+    }
+    unhealthy_state_routing {
+      minimum_healthy_targets_count      = 1
+      minimum_healthy_targets_percentage = "off"
+    }
+  }
+}
 
 resource "aws_lb_listener" "hosp" {
   alpn_policy                          = null

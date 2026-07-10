@@ -1,4 +1,4 @@
-resource "aws_ecr_repository" "ciao-ecr" {
+resource "aws_ecr_repository" "ciao-proxy" {
   name                 = "ciao-ecr"
   image_tag_mutability = "MUTABLE"
 
