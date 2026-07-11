@@ -57,7 +57,7 @@ resource "aws_lb_target_group" "proxy" {
   slow_start                         = 0
   tags                               = {}
   tags_all                           = {}
-  target_type                        = "ip"
+  target_type                        = "instance"
   vpc_id                             = "vpc-080dbb0b7dc86503a"
   health_check {
     enabled             = true
@@ -104,10 +104,11 @@ resource "aws_lb_listener" "hosp" {
         arn    = aws_lb_target_group.hosp.arn
         weight = 50
       }
-      target_group {
+        target_group {
         arn    = aws_lb_target_group.proxy.arn
         weight = 50
       }
+      
     }
   }
 }
