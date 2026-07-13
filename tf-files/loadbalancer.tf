@@ -9,7 +9,6 @@ resource "aws_lb_target_group" "hosp" {
   port                               = 80
   protocol                           = "HTTP"
   protocol_version                   = "HTTP1"
-  proxy_protocol_v2                  = null
   slow_start                         = 0
   tags                               = {}
   tags_all                           = {}
@@ -17,14 +16,14 @@ resource "aws_lb_target_group" "hosp" {
   vpc_id                             = "vpc-080dbb0b7dc86503a"
   health_check {
     enabled             = true
-    healthy_threshold   = 2
-    interval            = 30
+    healthy_threshold   = 3
+    interval            = 5
     matcher             = "200"
-    path                = "/"
+    path                = "/health"
     port                = "traffic-port"
     protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
+    timeout             = 3
+    unhealthy_threshold = 3
   }
   stickiness {
     cookie_duration = 86400
@@ -34,38 +33,86 @@ resource "aws_lb_target_group" "hosp" {
   }
   target_group_health {
     dns_failover {
-      minimum_healthy_targets_count      = 2
+      minimum_healthy_targets_count      = 1
       minimum_healthy_targets_percentage = "off"
     }
     unhealthy_state_routing {
-      minimum_healthy_targets_count      = 2
+      minimum_healthy_targets_count      = 1
       minimum_healthy_targets_percentage = "off"
     }
   }
 }
 
+resource "aws_lb_target_group" "proxy" {
+  deregistration_delay               = "300"
+  ip_address_type                    = "ipv4"
+  lambda_multi_value_headers_enabled = null
+  load_balancing_algorithm_type      = "round_robin"
+  load_balancing_anomaly_mitigation  = "off"
+  load_balancing_cross_zone_enabled  = "use_load_balancer_configuration"
+  name                               = "lb-tg-Ciao-proxy"
+  port                               = 80
+  protocol                           = "HTTP"
+  protocol_version                   = "HTTP1"
+  slow_start                         = 0
+  tags                               = {}
+  tags_all                           = {}
+  target_type                        = "ip"
+  vpc_id                             = "vpc-080dbb0b7dc86503a"
+  health_check {
+    enabled             = true
+    healthy_threshold   = 3
+    interval            = 5
+    matcher             = "200"
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 3
+    unhealthy_threshold = 3
+  }
+  stickiness {
+    cookie_duration = 86400
+    cookie_name     = null
+    enabled         = false
+    type            = "lb_cookie"
+  }
+  target_group_health {
+    dns_failover {
+      minimum_healthy_targets_count      = 1
+      minimum_healthy_targets_percentage = "off"
+    }
+    unhealthy_state_routing {
+      minimum_healthy_targets_count      = 1
+      minimum_healthy_targets_percentage = "off"
+    }
+  }
+}
 
 resource "aws_lb_listener" "hosp" {
   alpn_policy                          = null
   certificate_arn                      = null
-  load_balancer_arn                    = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:loadbalancer/app/lb-Ciao/d7fd2dde506cb7dd"
+  load_balancer_arn                    = aws_lb.hosp.arn
   port                                 = 80
   protocol                             = "HTTP"
   routing_http_response_server_enabled = true
-  tags                                 = {}
-  tags_all                             = {}
+
   default_action {
-    order            = 1
-    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:targetgroup/lb-tg-Ciao/e37a9b3b5fd09c50"
-    type             = "forward"
+    order = 1
+    type  = "forward"
     forward {
       target_group {
-        arn    = "arn:aws:elasticloadbalancing:eu-west-2:664047078509:targetgroup/lb-tg-Ciao/e37a9b3b5fd09c50"
-        weight = 1
+        arn    = aws_lb_target_group.hosp.arn
+        weight = 50
+        }
+            target_group {
+        arn    = aws_lb_target_group.proxy.arn
+        weight = 50
       }
+      
     }
   }
 }
+
 
 # __generated__ by Terraform
 resource "aws_lb" "hosp" {
@@ -118,7 +165,7 @@ resource "aws_s3_bucket" "ciao-lb-logs" {
   bucket = "ciao-lb-logs-bucket"
 
   tags = {
-    Owner        = "Ciao"
+    Owner = "Ciao"
   }
 }
 
@@ -127,20 +174,31 @@ resource "aws_athena_database" "ciao_athena_table" {
   bucket = aws_s3_bucket.ciao-lb-logs.id
 }
 
+resource "aws_athena_workgroup" "ciao" {
+  name = "ciao-workgroup"
+
+  configuration {
+    result_configuration {
+      output_location = "s3://${aws_s3_bucket.ciao-lb-logs.bucket}/athena-results/"
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "alb_logs_policy" {
   bucket = aws_s3_bucket.ciao-lb-logs.id
   policy = jsonencode({
-      Version = "2012-10-17",
-      Statement = [
-        {
-          Sid    = "AllowALBAccess",
-          Effect = "Allow",
-          Principal = {
-            Service = "logdelivery.elasticloadbalancing.amazonaws.com"
-          },
-          Action = "s3:PutObject",
-          Resource = "arn:aws:s3:::${aws_s3_bucket.ciao-lb-logs.bucket}/*"
-        }
-      ]
-    })
-  }
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "AllowALBAccess",
+        Effect = "Allow",
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com"
+        },
+        Action   = "s3:PutObject",
+        Resource = "arn:aws:s3:::${aws_s3_bucket.ciao-lb-logs.bucket}/*"
+      }
+    ]
+  })
+}
+
