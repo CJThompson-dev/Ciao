@@ -102,13 +102,30 @@ resource "aws_lb_listener" "hosp" {
     forward {
       target_group {
         arn    = aws_lb_target_group.hosp.arn
-        weight = 50
-        }
-            target_group {
-        arn    = aws_lb_target_group.proxy.arn
-        weight = 50
+        weight = 0
       }
-      
+      target_group {
+        arn    = aws_lb_target_group.proxy.arn
+        weight = 100
+      }
+
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "proxy_to_hosp" {
+  listener_arn = aws_lb_listener.hosp.arn
+  priority     = 1
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.hosp.arn
+  }
+
+  condition {
+    http_header {
+      http_header_name = "X-From-Proxy"
+      values           = ["true"]
     }
   }
 }
