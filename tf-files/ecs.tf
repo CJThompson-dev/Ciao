@@ -22,7 +22,7 @@ resource "aws_ecs_task_definition" "proxy" {
   container_definitions = jsonencode([
     {
       name  = "proxy"
-      image = "${aws_ecr_repository.ciao-proxy.repository_url}:latest"  
+      image = "${aws_ecr_repository.ciao-proxy.repository_url}:latest"
 
       essential = true
 
