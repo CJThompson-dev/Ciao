@@ -27,7 +27,7 @@ resource "aws_iam_role_policy" "lambda_sqs" {
         "sqs:DeleteMessage",
         "sqs:GetQueueAttributes"
       ]
-      Resource = aws_sqs_queue.failed_posts.arn
+      Resource = aws_sqs_queue.hosp_writes.arn
     }]
   })
 }

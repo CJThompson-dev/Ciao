@@ -18,6 +18,7 @@ resource "aws_ecs_task_definition" "proxy" {
   memory = "512"
 
   execution_role_arn = aws_iam_role.ciao_ecs_task_execution.arn
+  task_role_arn = aws_iam_role.ciao_ecs_task.arn
 
   container_definitions = jsonencode([
     {
@@ -71,5 +72,24 @@ resource "aws_ecs_service" "proxy" {
     target_group_arn = aws_lb_target_group.proxy.arn
     container_name   = "proxy"
     container_port   = 80
+  }
+}
+
+{
+  name      = "sqs-forwarder"
+  image     = "python:3.12-slim"
+  essential = false
+  environment = [
+    { name = "SQS_QUEUE_URL", value = aws_sqs_queue.hosp_writes.url },
+    { name = "AWS_DEFAULT_REGION", value = "eu-west-2" }
+  ]
+  portMappings = [{ containerPort = 8081, protocol = "tcp" }]
+  logConfiguration = {
+    logDriver = "awslogs"
+    options = {
+      awslogs-group         = aws_cloudwatch_log_group.proxy.name
+      awslogs-region        = "eu-west-2"
+      awslogs-stream-prefix = "sqs-forwarder"
+    }
   }
 }
