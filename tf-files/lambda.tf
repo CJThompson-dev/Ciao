@@ -7,7 +7,7 @@ resource "aws_lambda_function" "retry_posts" {
 
   environment {
     variables = {
-      HOSP_URL = "http://lb-ciao-652963539.eu-west-2.elb.amazonaws.com:"
+      HOSP_URL = "http://lb-ciao-652963539.eu-west-2.elb.amazonaws.com"
     }
   }
 }

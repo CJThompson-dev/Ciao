@@ -23,8 +23,8 @@ logger.setLevel(logging.INFO)
 # Base URL of the HOSP API.
 # Read from a Lambda Environment Variable so it can be
 # changed without modifying the code.
-HOSP_BASE_URL = os.environ.get(
-    "HOSP_BASE_URL",
+HOSP_URL = os.environ.get(
+    "HOSP_URL",
     "http://hosp"
 )
 
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
 
         # Build the full HOSP URL by combining the base
         # address with the API endpoint.
-        url = f"{HOSP_BASE_URL}{path}"
+        url = f"{HOSP_URL}{path}"
 
         # Add a User-Agent header if one does not exist.
         # This helps identify Lambda requests in logs.
