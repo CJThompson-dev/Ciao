@@ -52,7 +52,7 @@ resource "aws_ecs_service" "proxy" {
   task_definition = aws_ecs_task_definition.proxy.arn
 
   launch_type                        = "FARGATE"
-  desired_count                      = 2
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
 
